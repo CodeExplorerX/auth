@@ -123,7 +123,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	})
 
 	username := r.FormValue("username")
-	user, _ := users[username]
+
+	user := users[username]
 	user.SessionToken = ""
 	user.CSRFToken = ""
 	users[username] = user
