@@ -103,4 +103,30 @@ func protected(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "CSRF validation successful!, Welcome, %s", username)
 }
 
-func logout(w http.ResponseWriter, r *http.Request) {}
+func logout(w http.ResponseWriter, r *http.Request) {
+	if err := Authorize(r); err != nil {
+		http.Error(w, "Unauthorize", http.StatusUnauthorized)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "csrf_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: false,
+	})
+
+	username := r.FormValue("username")
+	user, _ := users[username]
+	user.SessionToken = ""
+	user.CSRFToken = ""
+	users[username] = user
+
+	fmt.Fprintf(w, "Logged out successfully!")
+}
