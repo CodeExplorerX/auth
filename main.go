@@ -88,6 +88,19 @@ func login(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Login successful!")
 }
 
-func logout(w http.ResponseWriter, r *http.Request) {}
+func protected(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 
-func protected(w http.ResponseWriter, r *http.Request) {}
+	if err := Authorize(r); err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	username := r.FormValue("username")
+	fmt.Fprintf(w, "CSRF validation successful!, Welcome, %s", username)
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {}
